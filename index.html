@@ -115,6 +115,7 @@
 
       const show = filtered[Math.floor(Math.random() * filtered.length)];
       const details = await fetchSeriesDetails(show.title);
+      console.log(details);
       if (!details) {
         document.getElementById("result").innerHTML = "<p class='text-red-600'>Failed to fetch details from TMDB.</p>";
         return;
