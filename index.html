@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random TV Episode Picker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+  <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-md p-6 mt-10">
+    <h2 class="text-2xl font-bold mb-4">🎬 Random Episode Picker</h2>
+
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:gap-6 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="platform">Filter by OTT</label>
+        <select id="platform" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+          <option value="">All</option>
+          <option value="Netflix">Netflix</option>
+          <option value="Amazon Prime">Amazon Prime</option>
+          <option value="Disney+ Hotstar">Disney+ Hotstar</option>
+          <option value="Hulu">Hulu</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="series">Filter by Series</label>
+        <select id="series" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <button onclick="pickEpisode()" class="mt-4 md:mt-7 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md">🔁 Refresh</button>
+    </div>
+
+    <div id="result" class="text-gray-800"></div>
+  </div>
+
+  <script>
+    const data = [
+      {
+        title: "Breaking Bad",
+        description: "A chemistry teacher turned meth producer.",
+        platforms: ["Netflix"],
+        episodes: [
+          {
+            season: 1,
+            episode: 1,
+            title: "Pilot",
+            description: "Walter White's life changes forever.",
+            links: {
+              US: "https://www.netflix.com/title/70143836",
+              IN: "https://www.netflix.com/in/title/70143836"
+            }
+          }
+        ]
+      },
+      {
+        title: "The Office",
+        description: "A mockumentary on a group of typical office workers.",
+        platforms: ["Amazon Prime"],
+        episodes: [
+          {
+            season: 2,
+            episode: 3,
+            title: "Office Olympics",
+            description: "Dwight and Michael play games.",
+            links: {
+              US: "https://www.amazon.com/dp/B000U0Z2LM",
+              IN: "https://www.primevideo.com/detail/0U8EGW9QW8"
+            }
+          }
+        ]
+      },
+      {
+        title: "Stranger Things",
+        description: "A group of kids uncover supernatural mysteries in their town.",
+        platforms: ["Netflix"],
+        episodes: [
+          {
+            season: 3,
+            episode: 1,
+            title: "Suzie, Do You Copy?",
+            description: "Summer brings new job, new villain, and new secrets.",
+            links: {
+              US: "https://www.netflix.com/title/80057281",
+              IN: "https://www.netflix.com/in/title/80057281"
+            }
+          }
+        ]
+      },
+      {
+        title: "WandaVision",
+        description: "Wanda and Vision navigate suburban life and strange realities.",
+        platforms: ["Disney+ Hotstar"],
+        episodes: [
+          {
+            season: 1,
+            episode: 5,
+            title: "On a Very Special Episode...",
+            description: "Reality begins to break down.",
+            links: {
+              US: "https://www.disneyplus.com/series/wandavision/4SrN28ZjDLwH",
+              IN: "https://www.hotstar.com/in/tv/wandavision/1260056095"
+            }
+          }
+        ]
+      },
+      {
+        title: "Brooklyn Nine-Nine",
+        description: "A comedy series about NYPD detectives in Brooklyn.",
+        platforms: ["Hulu", "Netflix"],
+        episodes: [
+          {
+            season: 4,
+            episode: 2,
+            title: "Coral Palms Pt. 2",
+            description: "Jake and Holt adjust to Florida life.",
+            links: {
+              US: "https://www.hulu.com/series/brooklyn-nine-nine",
+              IN: "https://www.netflix.com/in/title/70281562"
+            }
+          }
+        ]
+      }
+    ];
+
+    let countryCode = "US";
+
+    fetch("https://ipapi.co/json")
+      .then(res => res.json())
+      .then(location => {
+        countryCode = location.country_code || "US";
+      })
+      .catch(() => {});
+
+    function populateSeriesOptions() {
+      const seriesSelect = document.getElementById("series");
+      const titles = [...new Set(data.map(item => item.title))];
+      titles.forEach(title => {
+        const opt = document.createElement("option");
+        opt.value = title;
+        opt.textContent = title;
+        seriesSelect.appendChild(opt);
+      });
+    }
+
+    function pickEpisode() {
+      const platformFilter = document.getElementById("platform").value;
+      const seriesFilter = document.getElementById("series").value;
+
+      let filtered = data;
+      if (platformFilter) {
+        filtered = filtered.filter(show => show.platforms.includes(platformFilter));
+      }
+      if (seriesFilter) {
+        filtered = filtered.filter(show => show.title === seriesFilter);
+      }
+
+      if (!filtered.length) {
+        document.getElementById("result").innerHTML = "<p class='text-red-600'>No matching shows found.</p>";
+        return;
+      }
+
+      const show = filtered[Math.floor(Math.random() * filtered.length)];
+      const episode = show.episodes[Math.floor(Math.random() * show.episodes.length)];
+
+      const link = episode.links[countryCode] || Object.values(episode.links)[0];
+
+      document.getElementById("result").innerHTML = `
+        <div class="bg-gray-50 p-4 rounded-xl shadow">
+          <h3 class="text-xl font-semibold">${show.title} - S${episode.season}E${episode.episode}: ${episode.title}</h3>
+          <p class="mt-2 text-gray-700"><strong>Show:</strong> ${show.description}</p>
+          <p class="mt-1 text-gray-700"><strong>Episode:</strong> ${episode.description}</p>
+          <p class="mt-1 text-gray-700"><strong>Available on:</strong> ${show.platforms.join(", ")}</p>
+          <a href="${link}" target="_blank" class="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">▶️ Play Now</a>
+        </div>
+      `;
+    }
+
+    window.onload = () => {
+      populateSeriesOptions();
+      pickEpisode();
+    };
+  </script>
+</body>
+</html>
