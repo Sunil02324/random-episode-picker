@@ -130,6 +130,8 @@
 
       const streamLink = '';
 
+      console.log(show.platforms);
+
       const platformLinks = show.platforms.map(p => {
         const encodedTitle = encodeURIComponent(title);
         const searchURL = streamLink || `https://www.google.com/search?q=${encodedTitle}+${encodeURIComponent(p)}`;
