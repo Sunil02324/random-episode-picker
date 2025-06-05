@@ -105,6 +105,7 @@
       const seriesFilter = document.getElementById("series").value;
 
       let filtered = seriesList;
+      console.log(filtered);
       if (platformFilter) filtered = filtered.filter(show => show.platforms.includes(platformFilter));
       if (seriesFilter) filtered = filtered.filter(show => show.title === seriesFilter);
 
@@ -115,7 +116,6 @@
 
       const show = filtered[Math.floor(Math.random() * filtered.length)];
       const details = await fetchSeriesDetails(show.title);
-      console.log(details);
       if (!details) {
         document.getElementById("result").innerHTML = "<p class='text-red-600'>Failed to fetch details from TMDB.</p>";
         return;
@@ -130,8 +130,6 @@
       const ep = episodeData.episode;
 
       const streamLink = '';
-
-      console.log(show.platforms);
 
       const platformLinks = show.platforms.map(p => {
         const encodedTitle = encodeURIComponent(title);
