@@ -58,12 +58,14 @@
     const API_KEY = '83cf4999f4a8805b62aee19e2712b538'; // Replace with your TMDB API key
     const JUSTWATCH_API = 'https://apis.justwatch.com/content/titles/en_IN/popular';
 
-    const seriesList = [
-      { title: "Breaking Bad", platforms: ["Netflix", "Amazon Prime"] },
-      { title: "The Office", platforms: ["Amazon Prime", "Netflix"] },
-      { title: "Stranger Things", platforms: ["Netflix"] },
-      { title: "Brooklyn Nine-Nine", platforms: ["Hulu", "Netflix"] }
-    ];
+    let seriesList = [];
+
+    async function loadShows() {
+      const res = await fetch('shows.json');
+      seriesList = await res.json();
+      populateSeriesOptions();
+      pickEpisode(); // call after loading shows
+    }
 
     // let countryCode = "US";
 
@@ -167,10 +169,9 @@
         </div>
       `;
     }
-
+    
     window.onload = () => {
-      populateSeriesOptions();
-      pickEpisode();
+      loadShows();
     };
   </script>
 </body>
