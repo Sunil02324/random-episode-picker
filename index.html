@@ -105,7 +105,7 @@
       const seriesFilter = document.getElementById("series").value;
 
       let filtered = seriesList;
-      console.log(filtered);
+
       if (platformFilter) filtered = filtered.filter(show => show.platforms.includes(platformFilter));
       if (seriesFilter) filtered = filtered.filter(show => show.title === seriesFilter);
 
