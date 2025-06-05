@@ -13,6 +13,11 @@
 </head>
 <body class="bg-gray-50 font-sans">
   <div class="min-h-screen flex flex-col items-center justify-center">
+    <div class="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-8 px-4 text-center text-white">
+      <h1 class="text-3xl md:text-4xl font-bold">🎬 Discover a Random Episode</h1>
+      <p class="mt-2 text-sm">Pick a show, find a surprise episode, and start streaming instantly!</p>
+    </div>
+
     <div class="max-w-4xl w-full bg-white rounded-2xl shadow-lg p-6 mt-6 mx-4">
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div>
@@ -64,6 +69,15 @@
       return data.results[0];
     }
 
+    async function fetchRandomEpisode(tvId, seasonsCount) {
+      const seasonNumber = Math.floor(Math.random() * seasonsCount) + 1;
+      const seasonRes = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`);
+      const seasonData = await seasonRes.json();
+      const episodes = seasonData.episodes;
+      const episode = episodes[Math.floor(Math.random() * episodes.length)];
+      return { season: seasonNumber, episode };
+    }
+
     async function populateSeriesOptions() {
       const seriesSelect = document.getElementById("series");
       const defaultOption = document.createElement("option");
@@ -94,11 +108,19 @@
 
       const show = filtered[Math.floor(Math.random() * filtered.length)];
       const details = await fetchSeriesDetails(show.title);
+      if (!details) {
+        document.getElementById("result").innerHTML = "<p class='text-red-600'>Failed to fetch details from TMDB.</p>";
+        return;
+      }
+
       const poster = `https://image.tmdb.org/t/p/w300${details.poster_path}`;
       const backdrop = `https://image.tmdb.org/t/p/original${details.backdrop_path}`;
       const overview = details.overview || "No description available.";
       const title = details.name;
       const link = `https://www.google.com/search?q=${encodeURIComponent(title + ' ' + show.platforms.join(', '))}`;
+
+      const episodeData = await fetchRandomEpisode(details.id, details.number_of_seasons || 5);
+      const ep = episodeData.episode;
 
       document.getElementById("result").innerHTML = `
         <div class="overflow-hidden rounded-xl shadow-lg border border-gray-200">
@@ -107,8 +129,9 @@
             <img src="${poster}" class="w-28 h-40 object-cover rounded-md" alt="${title} poster" />
             <div>
               <h3 class="text-2xl font-bold">${title}</h3>
-              <p class="mt-1 text-sm text-gray-600">${overview}</p>
-              <p class="mt-1 text-sm text-gray-500">Available on: ${show.platforms.join(", ")}</p>
+              <p class="text-sm text-gray-700 mb-1">Season ${episodeData.season}, Episode ${ep.episode_number} - <strong>${ep.name}</strong></p>
+              <p class="text-sm text-gray-600">${ep.overview || 'No episode description available.'}</p>
+              <p class="mt-2 text-sm text-gray-500">Available on: ${show.platforms.join(", ")}</p>
               <a href="${link}" target="_blank" class="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">▶️ Play Now</a>
             </div>
           </div>
