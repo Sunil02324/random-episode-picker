@@ -5,11 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Random TV Episode Picker</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 font-sans">
   <div class="min-h-screen flex flex-col items-center justify-center">
     <div class="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-8 px-4 text-center text-white">
-      <h1 class="text-3xl font-bold">🎬 Discover a Random Episode</h1>
+      <h1 class="text-3xl md:text-4xl font-bold">🎬 Discover a Random Episode</h1>
       <p class="mt-2 text-sm">Pick a show, find a surprise episode, and start streaming instantly!</p>
     </div>
 
@@ -27,9 +32,7 @@
         </div>
         <div>
           <label for="series" class="block text-sm font-medium text-gray-700 mb-1">Filter by Series</label>
-          <select id="series" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-            <option value="">All</option>
-          </select>
+          <select id="series" class="w-full px-3 py-2 border border-gray-300 rounded-md"></select>
         </div>
         <div class="flex items-end">
           <button onclick="pickEpisode()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md">🔁 Refresh</button>
@@ -41,46 +44,13 @@
   </div>
 
   <script>
-    const data = [
-      {
-        title: "Breaking Bad",
-        description: "A chemistry teacher turned meth producer.",
-        poster: "https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png",
-        cover: "https://images.unsplash.com/photo-1609840116957-f589fa3ed3b9?fit=crop&w=1200&q=80",
-        platforms: ["Netflix"],
-        episodes: [
-          {
-            season: 1,
-            episode: 1,
-            title: "Pilot",
-            description: "Walter White's life changes forever.",
-            links: {
-              US: "https://www.netflix.com/title/70143836",
-              IN: "https://www.netflix.com/in/title/70143836"
-            }
-          }
-        ]
-      },
-      {
-        title: "The Office",
-        description: "A mockumentary on a group of typical office workers.",
-        poster: "https://upload.wikimedia.org/wikipedia/en/d/dc/TheOfficeUSSeason1Cover.jpg",
-        cover: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?fit=crop&w=1200&q=80",
-        platforms: ["Amazon Prime"],
-        episodes: [
-          {
-            season: 2,
-            episode: 3,
-            title: "Office Olympics",
-            description: "Dwight and Michael play games.",
-            links: {
-              US: "https://www.amazon.com/dp/B000U0Z2LM",
-              IN: "https://www.primevideo.com/detail/0U8EGW9QW8"
-            }
-          }
-        ]
-      }
-      // Add more entries similarly with poster and cover URLs
+    const API_KEY = '83cf4999f4a8805b62aee19e2712b538'; // Replace with your TMDB API key
+    const seriesList = [
+      { title: "Breaking Bad", platforms: ["Netflix"] },
+      { title: "The Office", platforms: ["Amazon Prime"] },
+      { title: "Stranger Things", platforms: ["Netflix"] },
+      { title: "WandaVision", platforms: ["Disney+ Hotstar"] },
+      { title: "Brooklyn Nine-Nine", platforms: ["Hulu"] }
     ];
 
     let countryCode = "US";
@@ -92,10 +62,15 @@
       })
       .catch(() => {});
 
-    function populateSeriesOptions() {
+    async function fetchSeriesDetails(title) {
+      const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
+      const data = await res.json();
+      return data.results[0];
+    }
+
+    async function populateSeriesOptions() {
       const seriesSelect = document.getElementById("series");
-      const titles = [...new Set(data.map(item => item.title))];
-      titles.forEach(title => {
+      seriesList.forEach(({ title }) => {
         const opt = document.createElement("option");
         opt.value = title;
         opt.textContent = title;
@@ -103,17 +78,13 @@
       });
     }
 
-    function pickEpisode() {
+    async function pickEpisode() {
       const platformFilter = document.getElementById("platform").value;
       const seriesFilter = document.getElementById("series").value;
 
-      let filtered = data;
-      if (platformFilter) {
-        filtered = filtered.filter(show => show.platforms.includes(platformFilter));
-      }
-      if (seriesFilter) {
-        filtered = filtered.filter(show => show.title === seriesFilter);
-      }
+      let filtered = seriesList;
+      if (platformFilter) filtered = filtered.filter(show => show.platforms.includes(platformFilter));
+      if (seriesFilter) filtered = filtered.filter(show => show.title === seriesFilter);
 
       if (!filtered.length) {
         document.getElementById("result").innerHTML = "<p class='text-red-600'>No matching shows found.</p>";
@@ -121,24 +92,23 @@
       }
 
       const show = filtered[Math.floor(Math.random() * filtered.length)];
-      const episode = show.episodes[Math.floor(Math.random() * show.episodes.length)];
-
-      const link = episode.links[countryCode] || Object.values(episode.links)[0];
+      const details = await fetchSeriesDetails(show.title);
+      const poster = `https://image.tmdb.org/t/p/w300${details.poster_path}`;
+      const backdrop = `https://image.tmdb.org/t/p/original${details.backdrop_path}`;
+      const overview = details.overview || "No description available.";
+      const title = details.name;
+      const link = `https://www.google.com/search?q=${encodeURIComponent(title + ' ' + show.platforms.join(', '))}`;
 
       document.getElementById("result").innerHTML = `
         <div class="overflow-hidden rounded-xl shadow-lg border border-gray-200">
-          <img src="${show.cover}" class="w-full h-48 object-cover" alt="${show.title} cover" />
-          <div class="p-4">
-            <div class="flex items-start gap-4">
-              <img src="${show.poster}" class="w-24 h-36 object-cover rounded-md" alt="${show.title} poster" />
-              <div>
-                <h3 class="text-2xl font-bold">${show.title}</h3>
-                <p class="mt-1 text-sm text-gray-600">${show.description}</p>
-                <p class="mt-2 text-sm text-gray-700 font-medium">S${episode.season}E${episode.episode}: ${episode.title}</p>
-                <p class="text-sm text-gray-600">${episode.description}</p>
-                <p class="mt-1 text-sm text-gray-500">Available on: ${show.platforms.join(", ")}</p>
-                <a href="${link}" target="_blank" class="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">▶️ Play Now</a>
-              </div>
+          <img src="${backdrop}" class="w-full h-48 object-cover sm:h-64" alt="${title} cover" />
+          <div class="p-4 flex flex-col md:flex-row items-start gap-4">
+            <img src="${poster}" class="w-28 h-40 object-cover rounded-md" alt="${title} poster" />
+            <div>
+              <h3 class="text-2xl font-bold">${title}</h3>
+              <p class="mt-1 text-sm text-gray-600">${overview}</p>
+              <p class="mt-1 text-sm text-gray-500">Available on: ${show.platforms.join(", ")}</p>
+              <a href="${link}" target="_blank" class="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">▶️ Play Now</a>
             </div>
           </div>
         </div>
