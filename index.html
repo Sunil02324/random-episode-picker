@@ -51,14 +51,14 @@
       { title: "Brooklyn Nine-Nine", platforms: ["Hulu", "Netflix"] }
     ];
 
-    let countryCode = "US";
+    // let countryCode = "US";
 
-    fetch("https://ipapi.co/json")
-      .then(res => res.json())
-      .then(location => {
-        countryCode = location.country_code || "US";
-      })
-      .catch(() => {});
+    // fetch("https://ipapi.co/json")
+    //   .then(res => res.json())
+    //   .then(location => {
+    //     countryCode = location.country_code || "US";
+    //   })
+    //   .catch(() => {});
 
     async function fetchSeriesDetails(title) {
       const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(title)}`);
@@ -128,7 +128,7 @@
       const episodeData = await fetchRandomEpisode(details.id, details.number_of_seasons || 5);
       const ep = episodeData.episode;
 
-      const streamLink = await fetchStreamingLinks(title);
+      const streamLink = '';
 
       const platformLinks = show.platforms.map(p => {
         const encodedTitle = encodeURIComponent(title);
