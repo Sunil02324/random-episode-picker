@@ -13,6 +13,11 @@
 </head>
 <body class="bg-gray-50 font-sans">
   <div class="min-h-screen flex flex-col items-center justify-center">
+    <div class="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-8 px-4 text-center text-white">
+      <h1 class="text-3xl md:text-4xl font-bold">🎬 Discover a Random Episode</h1>
+      <p class="mt-2 text-sm">Pick a show, find a surprise episode, and start streaming instantly!</p>
+    </div>
+
     <div class="max-w-4xl w-full bg-white rounded-2xl shadow-lg p-6 mt-6 mx-4">
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div>
@@ -28,6 +33,7 @@
         <div>
           <label for="series" class="block text-sm font-medium text-gray-700 mb-1">Filter by Series</label>
           <select id="series" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            <option value="">All</option>
           </select>
         </div>
         <div class="flex items-end">
@@ -41,19 +47,14 @@
 
   <script>
     const API_KEY = '83cf4999f4a8805b62aee19e2712b538'; // Replace with your TMDB API key
-    const PLATFORM_LINKS = {
-      "Netflix": "https://www.netflix.com/search?q=",
-      "Amazon Prime": "https://www.amazon.com/s?k=",
-      "Disney+ Hotstar": "https://www.hotstar.com/in/search?q=",
-      "Hulu": "https://www.hulu.com/search?q="
-    };
+    const JUSTWATCH_API = 'https://apis.justwatch.com/content/titles/en_IN/popular';
 
     const seriesList = [
-      { title: "Breaking Bad", platforms: ["Netflix"] },
-      { title: "The Office", platforms: ["Amazon Prime"] },
+      { title: "Breaking Bad", platforms: ["Netflix", "Amazon Prime"] },
+      { title: "The Office", platforms: ["Amazon Prime", "Netflix"] },
       { title: "Stranger Things", platforms: ["Netflix"] },
       { title: "WandaVision", platforms: ["Disney+ Hotstar"] },
-      { title: "Brooklyn Nine-Nine", platforms: ["Hulu"] }
+      { title: "Brooklyn Nine-Nine", platforms: ["Hulu", "Netflix"] }
     ];
 
     let countryCode = "US";
@@ -78,6 +79,16 @@
       const episodes = seasonData.episodes;
       const episode = episodes[Math.floor(Math.random() * episodes.length)];
       return { season: seasonNumber, episode };
+    }
+
+    async function fetchStreamingLinks(query) {
+      const res = await fetch(JUSTWATCH_API + `?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        const offer = data.items[0].offers?.[0];
+        return offer ? offer.urls.standard_web : null;
+      }
+      return null;
     }
 
     async function populateSeriesOptions() {
@@ -123,7 +134,13 @@
       const episodeData = await fetchRandomEpisode(details.id, details.number_of_seasons || 5);
       const ep = episodeData.episode;
 
-      const link = PLATFORM_LINKS[show.platforms[0]] + encodeURIComponent(title);
+      const streamLink = await fetchStreamingLinks(title);
+
+      const platformLinks = show.platforms.map(p => {
+        const encodedTitle = encodeURIComponent(title);
+        const searchURL = streamLink || `https://www.google.com/search?q=${encodedTitle}+${encodeURIComponent(p)}`;
+        return `<a href='${searchURL}' target='_blank' class='inline-block bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md mr-2 mt-2'>▶️ Watch on ${p}</a>`;
+      }).join(' ');
 
       document.getElementById("result").innerHTML = `
         <div class="overflow-hidden rounded-xl shadow-lg border border-gray-200">
@@ -134,8 +151,8 @@
               <h3 class="text-2xl font-bold">${title}</h3>
               <p class="text-sm text-gray-700 mb-1">Season ${episodeData.season}, Episode ${ep.episode_number} - <strong>${ep.name}</strong></p>
               <p class="text-sm text-gray-600">${ep.overview || 'No episode description available.'}</p>
-              <p class="mt-2 text-sm text-gray-500">Available on: ${show.platforms.join(", ")}</p>
-              <a href="${link}" target="_blank" class="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">▶️ Play Now</a>
+              <p class="mt-2 text-sm text-gray-500">Available on:</p>
+              <div class="mt-1 flex flex-wrap gap-2">${platformLinks}</div>
             </div>
           </div>
         </div>
