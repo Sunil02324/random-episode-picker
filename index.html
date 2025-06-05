@@ -40,7 +40,14 @@
   </div>
 
   <script>
-    const API_KEY = '83cf4999f4a8805b62aee19e2712b538'; // Replace with your TMDB API key
+    const API_KEY = '<<YOUR_TMDB_API_KEY>>'; // Replace with your TMDB API key
+    const PLATFORM_LINKS = {
+      "Netflix": "https://www.netflix.com/search?q=",
+      "Amazon Prime": "https://www.amazon.com/s?k=",
+      "Disney+ Hotstar": "https://www.hotstar.com/in/search?q=",
+      "Hulu": "https://www.hulu.com/search?q="
+    };
+
     const seriesList = [
       { title: "Breaking Bad", platforms: ["Netflix"] },
       { title: "The Office", platforms: ["Amazon Prime"] },
@@ -112,10 +119,11 @@
       const backdrop = `https://image.tmdb.org/t/p/original${details.backdrop_path}`;
       const overview = details.overview || "No description available.";
       const title = details.name;
-      const link = `https://www.google.com/search?q=${encodeURIComponent(title + ' ' + show.platforms.join(', '))}`;
 
       const episodeData = await fetchRandomEpisode(details.id, details.number_of_seasons || 5);
       const ep = episodeData.episode;
+
+      const link = PLATFORM_LINKS[show.platforms[0]] + encodeURIComponent(title);
 
       document.getElementById("result").innerHTML = `
         <div class="overflow-hidden rounded-xl shadow-lg border border-gray-200">
