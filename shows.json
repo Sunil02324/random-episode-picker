@@ -3,11 +3,6 @@
   { "title": "The Office", "platforms": ["Amazon Prime", "Netflix"] },
   { "title": "Stranger Things", "platforms": ["Netflix"] },
   { "title": "Brooklyn Nine-Nine", "platforms": ["Hulu", "Netflix"] },
-  { "title": "The Crown", "platforms": ["Netflix"] },
-  { "title": "Fleabag", "platforms": ["Amazon Prime"] },
-  { "title": "The Mandalorian", "platforms": ["Disney+ Hotstar"] },
   { "title": "Friends", "platforms": ["Netflix"] },
-  { "title": "Loki", "platforms": ["Disney+ Hotstar"] },
-  { "title": "House of the Dragon", "platforms": ["Disney+ Hotstar"] },
-  { "title": "Peaky Blinders", "platforms": ["Netflix"] }
+  { "title": "The Big Bang Theory", "platforms": ["Netflix", "Amazon Prime"] },
 ]
