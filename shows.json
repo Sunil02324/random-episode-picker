@@ -4,5 +4,5 @@
   { "title": "Stranger Things", "platforms": ["Netflix"] },
   { "title": "Brooklyn Nine-Nine", "platforms": ["Hulu", "Netflix"] },
   { "title": "Friends", "platforms": ["Netflix"] },
-  { "title": "The Big Bang Theory", "platforms": ["Netflix", "Amazon Prime"] },
+  { "title": "The Big Bang Theory", "platforms": ["Netflix", "Amazon Prime"] }
 ]
